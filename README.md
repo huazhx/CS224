@@ -1,2 +1,2 @@
 # CS224
-Reproduction of the paper mentioned in CS224
+cs224 course assignments
