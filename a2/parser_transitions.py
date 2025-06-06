@@ -33,6 +33,9 @@ class PartialParse(object):
         ### Note: If you need to use the sentence object to initialize anything, make sure to not directly 
         ###       reference the sentence object.  That is, remember to NOT modify the sentence object. 
 
+        self.stack = ['ROOT']
+        self.buffer = list(sentence)
+        self.dependencies = []
 
         ### END YOUR CODE
 
@@ -52,7 +55,16 @@ class PartialParse(object):
         ###         2. Left Arc
         ###         3. Right Arc
 
-
+        if transition == 'S':
+            self.stack.append(self.buffer.pop(0))
+        elif transition == 'LA':
+            self.dependencies.append((self.stack[-1], self.stack[-2]))
+            self.stack.pop(-2)
+        elif transition == 'RA':
+            self.dependencies.append((self.stack[-2], self.stack[-1]))
+            self.stack.pop(-1)
+        return 
+    
         ### END YOUR CODE
 
     def parse(self, transitions):
