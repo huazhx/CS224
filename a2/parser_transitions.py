@@ -115,6 +115,15 @@ def minibatch_parse(sentences, model, batch_size):
     ###             to remove objects from the `unfinished_parses` list. This will free the underlying memory that
     ###             is being accessed by `partial_parses` and may cause your code to crash.
 
+    partial_parses = [PartialParse(sentence) for sentence in sentences]
+    unfinished_parses = partial_parses[:]
+    while unfinished_parses:
+        minibatch = unfinished_parses[:batch_size]
+        predicted_transition_batch = model.predict(minibatch)
+        for parse, transition in zip(minibatch, predicted_transition_batch):
+            parse.parse_step(transition)
+        unfinished_parses = [parse for parse in unfinished_parses if not (len(parse.buffer) == 0 and len(parse.stack) == 1)]
+    dependencies = [parse.dependencies for parse in partial_parses]
 
     ### END YOUR CODE
 
@@ -233,14 +242,15 @@ def test_minibatch_parse():
     print("minibatch_parse test passed!")
 
 
-if __name__ == '__main__':
-    args = sys.argv
-    if len(args) != 2:
-        raise Exception("You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
-    elif args[1] == "part_c":
-        test_parse_step()
-        test_parse()
-    elif args[1] == "part_d":
-        test_minibatch_parse()
-    else:
-        raise Exception("You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
+# if __name__ == '__main__':
+#     args = sys.argv
+#     if len(args) != 2:
+#         raise Exception("You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
+#     elif args[1] == "part_c":
+#         test_parse_step()
+#         test_parse()
+#     elif args[1] == "part_d":
+#         test_minibatch_parse()
+#     else:
+#         raise Exception("You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
+test_minibatch_parse()
