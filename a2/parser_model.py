@@ -73,15 +73,15 @@ class ParserModel(nn.Module):
         ### 
         ### See the PDF for hints.
 
-        self.embed_to_hidden_weight = nn.Parameter(torch.empty(self.embed_size, self.hidden_size))
-        self.embed_to_hidden_bias = nn.Parameter(torch.empty(self.hidden_size, self.embed_size))
+        self.embed_to_hidden_weight = nn.Parameter(torch.empty(self.embed_size * self.n_features, self.hidden_size))
+        self.embed_to_hidden_bias = nn.Parameter(torch.empty(self.hidden_size))
 
         nn.init.xavier_uniform_(self.embed_to_hidden_weight)
         nn.init.uniform_(self.embed_to_hidden_bias)
 
         self.dropout = nn.Dropout(self.dropout_prob)
         self.hidden_to_logits_weight = nn.Parameter(torch.empty(self.hidden_size, self.n_classes))
-        self.hidden_to_logits_bias = nn.Parameter(torch.empty(self.hidden_size, self.n_classes))
+        self.hidden_to_logits_bias = nn.Parameter(torch.empty(self.n_classes))
 
         nn.init.xavier_uniform_(self.hidden_to_logits_weight)
         nn.init.uniform_(self.hidden_to_logits_bias)
@@ -117,7 +117,9 @@ class ParserModel(nn.Module):
         ###     View: https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
         ###     Flatten: https://pytorch.org/docs/stable/generated/torch.flatten.html
 
-
+        batch_size, n_features = w.shape
+        all_word_embedddings = self.embeddings[torch.flatten(w)]
+        x = all_word_embedddings.view(batch_size, n_features * self.embed_size)
 
         ### END YOUR CODE
         return x
@@ -154,7 +156,9 @@ class ParserModel(nn.Module):
         ###     Matrix product: https://pytorch.org/docs/stable/torch.html#torch.matmul
         ###     ReLU: https://pytorch.org/docs/stable/nn.html?highlight=relu#torch.nn.functional.relu
 
-
+        embed_w = self.embedding_lookup(w=w)
+        hidden_output = self.dropout(torch.relu(embed_w * self.embed_to_hidden_weight + self.embed_to_hidden_bias))
+        logits = hidden_output * self.hidden_to_logits_weight + self.hidden_to_logits_bias
         ### END YOUR CODE
         return logits
 
