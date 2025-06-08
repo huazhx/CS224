@@ -73,9 +73,19 @@ class ParserModel(nn.Module):
         ### 
         ### See the PDF for hints.
 
+        self.embed_to_hidden_weight = nn.Parameter(torch.empty(self.embed_size, self.hidden_size))
+        self.embed_to_hidden_bias = nn.Parameter(torch.empty(self.hidden_size, self.embed_size))
 
+        nn.init.xavier_uniform_(self.embed_to_hidden_weight)
+        nn.init.uniform_(self.embed_to_hidden_bias)
 
+        self.dropout = nn.Dropout(self.dropout_prob)
+        self.hidden_to_logits_weight = nn.Parameter(torch.empty(self.hidden_size, self.n_classes))
+        self.hidden_to_logits_bias = nn.Parameter(torch.empty(self.hidden_size, self.n_classes))
 
+        nn.init.xavier_uniform_(self.hidden_to_logits_weight)
+        nn.init.uniform_(self.hidden_to_logits_bias)
+        
         ### END YOUR CODE
 
     def embedding_lookup(self, w):
