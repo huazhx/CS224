@@ -242,15 +242,14 @@ def test_minibatch_parse():
     print("minibatch_parse test passed!")
 
 
-# if __name__ == '__main__':
-#     args = sys.argv
-#     if len(args) != 2:
-#         raise Exception("You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
-#     elif args[1] == "part_c":
-#         test_parse_step()
-#         test_parse()
-#     elif args[1] == "part_d":
-#         test_minibatch_parse()
-#     else:
-#         raise Exception("You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
-test_minibatch_parse()
+if __name__ == '__main__':
+    args = sys.argv
+    if len(args) != 2:
+        raise Exception("You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
+    elif args[1] == "part_c":
+        test_parse_step()
+        test_parse()
+    elif args[1] == "part_d":
+        test_minibatch_parse()
+    else:
+        raise Exception("You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
