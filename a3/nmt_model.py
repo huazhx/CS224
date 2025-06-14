@@ -86,7 +86,15 @@ class NMT(nn.Module):
         ###     Dropout Layer:
         ###         https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html
 
-
+        self.post_embed_cnn = nn.Conv1d(in_channels=embed_size, out_channels=embed_size, kernel_size=2, padding=1)
+        self.encoder = nn.LSTM(input_size=embed_size, hidden_size=hidden_size, bidirectional=True)
+        self.decoder = nn.LSTMCell(input_size=embed_size, hidden_size=hidden_size)
+        self.h_projection = nn.Linear(in_features=hidden_size * 2, out_features=hidden_size, bias=False)
+        self.c_projection = nn.Linear(in_features=hidden_size * 2, out_features=hidden_size, bias=False)
+        self.att_projection = nn.Linear(in_features=hidden_size * 2, out_features=hidden_size, bias=False)
+        self.combined_output_projection = nn.Linear(in_features=hidden_size * 3, out_features=hidden_size, bias=False)
+        self.target_vocab_projection = nn.Linear(in_features=hidden_size, out_features=len(vocab.tgt))
+        self.dropout = nn.Dropout()
 
         ### END YOUR CODE
 
@@ -180,7 +188,9 @@ class NMT(nn.Module):
         ###     Tensor Permute:
         ###         https://pytorch.org/docs/stable/generated/torch.permute.html
 
-
+        X = self.model_embeddings.source(source_padded)
+        cnn_output = self.post_embed_cnn(torch.permute(X, (1, 0, 2)))
+        
 
 
 
