@@ -93,8 +93,8 @@ class NMT(nn.Module):
         self.c_projection = nn.Linear(in_features=hidden_size * 2, out_features=hidden_size, bias=False)
         self.att_projection = nn.Linear(in_features=hidden_size * 2, out_features=hidden_size, bias=False)
         self.combined_output_projection = nn.Linear(in_features=hidden_size * 3, out_features=hidden_size, bias=False)
-        self.target_vocab_projection = nn.Linear(in_features=hidden_size, out_features=len(vocab.tgt))
-        self.dropout = nn.Dropout()
+        self.target_vocab_projection = nn.Linear(in_features=hidden_size, out_features=len(vocab.tgt), bias=False)
+        self.dropout = nn.Dropout(self.dropout_rate)
 
         ### END YOUR CODE
 
@@ -189,10 +189,14 @@ class NMT(nn.Module):
         ###         https://pytorch.org/docs/stable/generated/torch.permute.html
 
         X = self.model_embeddings.source(source_padded)
-        cnn_output = self.post_embed_cnn(torch.permute(X, (1, 0, 2)))
-        
-
-
+        cnn_output = self.post_embed_cnn(torch.permute(X, (1, 2, 0)))
+        encoder_input = nn.utils.rnn.pack_padded_sequence(torch.permute(cnn_output, (2, 0, 1)), source_lengths)
+        encoder_output, (last_hidden, last_cell)  = self.encoder(encoder_input)
+        enc_hiddens_packed, _ = nn.utils.rnn.pad_packed_sequence(encoder_output)
+        enc_hiddens= torch.permute(enc_hiddens_packed, (1, 0, 2))
+        init_decoder_hidden = self.h_projection(torch.cat(torch.unbind(last_hidden, dim=0), dim=-1))
+        init_decoder_cell = self.c_projection(torch.cat(torch.unbind(last_cell, dim=0), dim=-1))
+        dec_init_state = (init_decoder_hidden, init_decoder_cell)
 
         ### END YOUR CODE
 
