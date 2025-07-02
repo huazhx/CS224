@@ -4,3 +4,6 @@
 
 *.pyc
 *.weights
+*.txt
+
+.DS_Store
