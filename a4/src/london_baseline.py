@@ -12,7 +12,14 @@ def main():
 
     # Compute accuracy in the range [0.0, 100.0]
     ### YOUR CODE HERE ###
-    pass
+    total_number = 0
+    correct = 0
+    for line in open('birth_dev.tsv', encoding='utf-8'):
+        birth_place = line.split('\t')[1].strip()
+        if birth_place.lower() == 'london':
+            correct += 1
+        total_number += 1
+    accuracy = correct / total_number * 100
     ### END YOUR CODE ###
 
     return accuracy

@@ -142,54 +142,45 @@ elif args.function == 'finetune':
     #     number of epochs for each case.
 
     ### YOUR CODE HERE ###
-
-    model_loaded = False
-
-    try:
-        # Load the checkpoint
-        checkpoint = torch.load(args.reading_params_path, map_location=device)
-        
-        # Handle different checkpoint formats
-        if isinstance(checkpoint, dict):
-            # If checkpoint contains additional info (optimizer state, epoch, etc.)
-            if 'model_state_dict' in checkpoint:
-                model.load_state_dict(checkpoint['model_state_dict'])
-            elif 'state_dict' in checkpoint:
-                model.load_state_dict(checkpoint['state_dict'])
-            else:
-                # Assume the dict is the state_dict itself
-                model.load_state_dict(checkpoint)
-        else:
-            # If checkpoint is just the state_dict
-            model.load_state_dict(checkpoint)
-            
-        print(f"Successfully loaded parameters from {args.reading_params_path}")
-        model_loaded = True
-    except FileNotFoundError:
-        print(f"Error: Could not find checkpoint file at {args.reading_params_path}")
-    except Exception as e:
-        print(f"Error loading checkpoint: {e}")
-
-    if not model_loaded:
+    is_pretrained_model = False
+    if not args.reading_params_path:
         print("Finetune WITHOUT a pretrained model")
+    else:
+        print(f"Loading model from {args.reading_params_path}")
+        model.load_state_dict(torch.load(args.reading_params_path))
+        is_pretrained_model = True
     
     # initialize the dataset 
     name_dataset = dataset.NameDataset(pretrain_dataset, 
-                                       open(args.finetune_corpus_path, encoding='utf-8').read())
+                                        open(args.finetune_corpus_path, encoding='utf-8').read())
 
-    # initialize a trainer instance and kick off training
-    tconf = trainer.TrainerConfig(max_epochs=75, 
-                                  batch_size=256, 
-                                  learning_rate=args.finetune_lr,
-                                  lr_decay=True, 
-                                  warmup_tokens=512*20, 
-                                  final_tokens=200*len(pretrain_dataset)*block_size,
-                                  num_workers=4,
-                                  writer=writer)
+    if is_pretrained_model:
+        # initialize a trainer instance and kick off training
+        tconf = trainer.TrainerConfig(max_epochs=75, 
+                                    batch_size=256, 
+                                    learning_rate=args.finetune_lr,
+                                    lr_decay=True, 
+                                    warmup_tokens=512*20, 
+                                    final_tokens=200*len(pretrain_dataset)*block_size,
+                                    num_workers=4,
+                                    writer=writer, 
+                                    ckpt_path = args.writing_params_path)
+        
+    else:
+        tconf = trainer.TrainerConfig(max_epochs=10, 
+                                    batch_size=256, 
+                                    learning_rate=args.finetune_lr,
+                                    lr_decay=True, 
+                                    warmup_tokens=512*20, 
+                                    final_tokens=200*len(pretrain_dataset)*block_size,
+                                    num_workers=4,
+                                    writer=writer, 
+                                    ckpt_path = args.writing_params_path)
+        
     trainer = trainer.Trainer(model, name_dataset, None, tconf)
     trainer.train()
-
     ### END YOUR CODE ###
+
 elif args.function == 'evaluate':
     assert args.outputs_path is not None
     assert args.reading_params_path is not None
