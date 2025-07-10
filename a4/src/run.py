@@ -103,7 +103,17 @@ if args.function == 'pretrain':
     # writer=writer
 
     ### YOUR CODE HERE ###
-    pass
+    tconf = trainer.TrainerConfig(max_epochs=650, 
+                                    batch_size=128, 
+                                    learning_rate=args.pretrain_lr,
+                                    lr_decay=True, 
+                                    warmup_tokens=512*20, 
+                                    final_tokens=200*len(pretrain_dataset)*block_size,
+                                    num_workers=4,
+                                    writer=writer, 
+                                    ckpt_path = args.writing_params_path)
+    trainer = trainer.Trainer(model, pretrain_dataset, None, tconf)
+    trainer.train()
     ### END YOUR CODE ###
 elif args.function == 'finetune':
     assert args.writing_params_path is not None
@@ -154,7 +164,7 @@ elif args.function == 'finetune':
     name_dataset = dataset.NameDataset(pretrain_dataset, 
                                         open(args.finetune_corpus_path, encoding='utf-8').read())
 
-    if is_pretrained_model:
+    if not is_pretrained_model:
         # initialize a trainer instance and kick off training
         tconf = trainer.TrainerConfig(max_epochs=75, 
                                     batch_size=256, 

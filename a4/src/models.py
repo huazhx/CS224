@@ -103,11 +103,11 @@ class GPT(nn.Module):
         return self.block_size
 
     def forward(self, idx, targets=None):
-        b, t = idx.size()
+        b, t = idx.size() # [batch, sequence_length]
         assert t <= self.block_size, f"Cannot forward, model block size ({t}, {self.block_size}) is exhausted."
 
         # forward the GPT model
-        token_embeddings = self.tok_emb(idx) # each index maps to a (learnable) vector
+        token_embeddings = self.tok_emb(idx) # each index maps to a (learnable) vector [batch, seq_len, embed_size]
         if self.rope:
             x_input = token_embeddings
         else:
